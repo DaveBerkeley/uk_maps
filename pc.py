@@ -694,15 +694,4 @@ if __name__ == "__main__":
         print "nearby", lat, lon
         show(idxs)
 
-    if False:
-        #http://localhost:8081/wiki/postcode.cgp?json=1&lat0=50.389377199489886&lon0=-4.1409037797927795&lat1=50.39141557998699&lon1=-4.13014275722503
-        lat0=50.389377199489886
-        lon0=-4.1409037797927795
-        lat1=50.39141557998699
-        lon1=-4.13014275722503
-
-        print
-        idxs = get_range(lat0, lat1, lon0, lon1)
-        show(idxs)
-
 # FIN
