@@ -109,7 +109,7 @@ def make_db(ipath, opath):
         # Keep the 6-figure part
         osref = osref[:5] + osref[7:10]
         # lat,lon are in OSGB36, so convert to WGS84
-        lat, lon = osgb36_to_wgs84(lat, lon)
+        #lat, lon = osgb36_to_wgs84(lat, lon)
         data.append((pc, lat, lon, osref))
 
     print >> sys.stderr, "sorting ..."
