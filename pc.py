@@ -1,4 +1,21 @@
 #!/usr/bin/python
+#
+# Copyright (C) 2015 Dave Berkeley projects@rotwang.co.uk
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+# USA
 
 import sys
 import csv
@@ -10,6 +27,7 @@ import re
 import optparse
 
 from osgrid_to_wgs84 import convert as to_wgs84
+from osgrid_to_wgs84 import osgb36_to_wgs84
 
 pcpath = "/usr/local/data/books/uk-post-codes-2009.bz2"
 gazpath = "/usr/local/data/books/gaz50k2014_gb.zip"
@@ -90,7 +108,8 @@ def make_db(ipath, opath):
         osref = row[15]
         # Keep the 6-figure part
         osref = osref[:5] + osref[7:10]
-
+        # lat,lon are in OSGB36, so convert to WGS84
+        lat, lon = osgb36_to_wgs84(lat, lon)
         data.append((pc, lat, lon, osref))
 
     print >> sys.stderr, "sorting ..."
@@ -673,6 +692,17 @@ if __name__ == "__main__":
         idxs = get_range(lat-margin, lat+margin, lon-margin, lon+margin)
 
         print "nearby", lat, lon
+        show(idxs)
+
+    if False:
+        #http://localhost:8081/wiki/postcode.cgp?json=1&lat0=50.389377199489886&lon0=-4.1409037797927795&lat1=50.39141557998699&lon1=-4.13014275722503
+        lat0=50.389377199489886
+        lon0=-4.1409037797927795
+        lat1=50.39141557998699
+        lon1=-4.13014275722503
+
+        print
+        idxs = get_range(lat0, lat1, lon0, lon1)
         show(idxs)
 
 # FIN
