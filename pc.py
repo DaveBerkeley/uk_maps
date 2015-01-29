@@ -197,7 +197,7 @@ def make_os_db(path, os_path):
 #
 #   Read OS gazeteer and create db
 
-idx_fmt = "=IH6s"
+idx_fmt = "=IIH6s"
 
 def make_gaz_db(path):
     if os.path.exists(path + ".idx"):
@@ -223,29 +223,40 @@ def make_gaz_db(path):
     reader = csv.reader(f, delimiter=":")
     offset = 0
     data = []
+    county_idx = {}
+    counties = []
     print >> sys.stderr, "create gaz db"
     for row in reader:
         osref, text = row[1], row[2]
+
+        # county index
+        county = row[13]
+        if county_idx.get(county) is None:
+            county_idx[county] = len(counties)
+            counties.append(county)
 
         # ditch the dual-language stuff
         text = text.split("/", 1)[0]
 
         ftext.write(text)
-        data.append((text, offset, osref))
+        data.append((text, offset, osref, county_idx[county]))
 
         offset += len(text)
 
     print >> sys.stderr, "sorting gaz"
     data.sort()
     print >> sys.stderr, "create gaz index"
-    for idx, (text, offset, osref) in enumerate(data):
+    for idx, (text, offset, osref, cidx) in enumerate(data):
         length = len(text)
-        raw = struct.pack(idx_fmt, offset, length, osref)
+        raw = struct.pack(idx_fmt, cidx, offset, length, osref)
         fidx.write(raw)
 
     print >> sys.stderr, "remove", gaz_text_path
     f.close()
     os.unlink(gaz_text_path)
+
+    print >> sys.stderr
+    # TODO : write county db
 
 #
 #
@@ -283,13 +294,16 @@ class GazMatcher:
     def get(self, fidx, idx):
         fidx.seek(self.itemsize * idx)
         raw = fidx.read(self.itemsize)
-        offset, length, osref = struct.unpack(idx_fmt, raw)
+        county_idx, offset, length, osref = struct.unpack(idx_fmt, raw)
 
         self.ftxt.seek(offset)
         placename = self.ftxt.read(length)
         result = (placename, osref)
         self.last = (idx,) + result
         return result
+
+#
+#
 
 def search_gaz_re(fidx, matcher, name):
 
