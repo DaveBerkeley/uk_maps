@@ -41,6 +41,7 @@ lat_name = "lat.dat"
 lon_name = "lon.dat"
 os_name = "os.dat"
 gaz_name = "gaz"
+county_name = "county.dat"
 
 #
 #   Make db and index files
@@ -387,7 +388,7 @@ def search_adjacent(fin, max_records, idx, matcher, get_record):
 #
 
 def search_os(match):
-    os_path = os.path.join(cache_base, os_name)
+    os_path = get_name(os_name)
     itemsize = struct.calcsize(fmt_os)
     records = os.path.getsize(os_path) / itemsize
     fin = open(os_path, "rb")
@@ -420,7 +421,7 @@ def search_os(match):
 #   Create any database and index files
 
 def make_all(pcdb, gazdb):
-    txt_path = os.path.join(cache_base, txt_name)
+    txt_path = get_name(txt_name)
     path = get_db_name()
 
     if pcdb:
@@ -431,17 +432,17 @@ def make_all(pcdb, gazdb):
             print >> sys.stderr, "Removing", txt_path 
             os.remove(txt_path)
 
-        lat_path = os.path.join(cache_base, lat_name)
-        lon_path = os.path.join(cache_base, lon_name)
+        lat_path = get_name(lat_name)
+        lon_path = get_name(lon_name)
         if not os.path.exists(lat_path):
             make_idx_db(path, lat_path, lon_path)
 
-        os_path = os.path.join(cache_base, os_name)
+        os_path = get_name(os_name)
         if not os.path.exists(os_path):
             make_os_db(path, os_path)
 
     if gazdb:
-        gaz_path = os.path.join(cache_base, gaz_name)
+        gaz_path = get_name(gaz_name)
         if not os.path.exists(gaz_path):
             make_gaz_db(gaz_path)
 
@@ -555,8 +556,8 @@ def search(match):
 #   Get the db indexes for a bounded region
 
 def get_range(lat_lo, lat_hi, lon_lo, lon_hi):
-    lat_path = os.path.join(cache_base, lat_name)
-    lon_path = os.path.join(cache_base, lon_name)
+    lat_path = get_name(lat_name)
+    lon_path = get_name(lon_name)
     lats = between(lat_path, lat_lo, lat_hi)
     lons = between(lon_path, lon_lo, lon_hi)
 
