@@ -131,7 +131,7 @@ def gaz_map(search, colour):
     print >> sys.stderr, "search gaz"
     places = pc.search_gaz(search)
     points = []
-    for name, os4 in places:
+    for name, os4, county in places:
         e, n = osref_to_en(os4)
         e, n = scale_en(e, n)
         if n < 0:

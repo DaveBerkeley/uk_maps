@@ -41,7 +41,7 @@ lat_name = "lat.dat"
 lon_name = "lon.dat"
 os_name = "os.dat"
 gaz_name = "gaz"
-county_name = "county.dat"
+county_name = "gaz.county.dat"
 
 #
 #   Make db and index files
@@ -256,8 +256,10 @@ def make_gaz_db(path):
     f.close()
     os.unlink(gaz_text_path)
 
-    print >> sys.stderr
-    # TODO : write county db
+    print >> sys.stderr, "write county db"
+    f = open(get_name(county_name), "wb")
+    f.write("\0".join(counties))
+    f.close()
 
 #
 #
@@ -296,10 +298,11 @@ class GazMatcher:
         fidx.seek(self.itemsize * idx)
         raw = fidx.read(self.itemsize)
         county_idx, offset, length, osref = struct.unpack(idx_fmt, raw)
+        county = county_data[county_idx]
 
         self.ftxt.seek(offset)
         placename = self.ftxt.read(length)
-        result = (placename, osref)
+        result = (placename, osref, county)
         self.last = (idx,) + result
         return result
 
@@ -349,7 +352,7 @@ def search_gaz(name):
     if not result:
         return None
         #result = matcher.last
-    idx, place, osref = result
+    idx, place, osref, county = result
 
     # search for any other places with the same name
     idxs = search_adjacent(fidx, records, idx, matcher.match, matcher.get)
@@ -420,6 +423,8 @@ def search_os(match):
 #
 #   Create any database and index files
 
+county_data = None
+
 def make_all(pcdb, gazdb):
     txt_path = get_name(txt_name)
     path = get_db_name()
@@ -445,6 +450,12 @@ def make_all(pcdb, gazdb):
         gaz_path = get_name(gaz_name)
         if not os.path.exists(gaz_path):
             make_gaz_db(gaz_path)
+
+        global county_data
+        f = open(get_name(county_name), "rb")
+        raw = f.read()
+        county_data = raw.split("\0")
+        f.close()
 
 #
 # binary search on records
@@ -670,10 +681,10 @@ if __name__ == "__main__":
         places = search_gaz(opts.gaz)
 
         if places:
-            for place, osref4 in places:
+            for place, osref4, county in places:
                 osref = os4to6(osref4)
                 lat, lon = to_wgs84(osref)
-                print "found", place, osref, lat, lon
+                print "found", place, osref, lat, lon, county
                 print " ", open_street_map(lat, lon)
 
     is_lat_lon = False
